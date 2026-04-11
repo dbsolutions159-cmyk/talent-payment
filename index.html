@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Talent OS Payment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .box {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 15px auto;
+      width: 300px;
+    }
+
+    button {
+      background: #22c55e;
+      border: none;
+      padding: 12px;
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Talent OS Subscription</h2>
+
+<div class="box">
+  <h3>₹199 - 3 Months</h3>
+  <button onclick="pay(199)">Pay ₹199</button>
+</div>
+
+<div class="box">
+  <h3>₹499 - 6 Months ⭐ Recommended</h3>
+  <button onclick="pay(499)">Pay ₹499</button>
+</div>
+
+<div class="box">
+  <h3>Confirm Payment</h3>
+
+  <input id="name" placeholder="Your Name">
+  <input id="email" placeholder="Your Email">
+  <input id="txn" placeholder="Transaction ID">
+
+  <button onclick="submitForm()">I Have Paid</button>
+</div>
+
+<script>
+let selectedAmount = 0;
+
+function pay(amount){
+  selectedAmount = amount;
+
+  let upi = `upi://pay?pa=dharmeshband492-2@oksbi&pn=TalentOS&am=${amount}&cu=INR`;
+
+  window.location.href = upi;
+}
+
+function submitForm(){
+  let name = document.getElementById("name").value;
+  let email = document.getElementById("email").value;
+  let txn = document.getElementById("txn").value;
+
+  if(!name || !email || !txn || !selectedAmount){
+    alert("Fill all details + select plan");
+    return;
+  }
+
+  fetch("http://localhost:5000/send", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({name,email,txn,amount:selectedAmount})
+  });
+
+  alert("Payment Submitted! Check your email.");
+
+  window.location.href =
+   "https://wa.me/917987107059?text=" +
+   encodeURIComponent(`Hi, I paid ₹${selectedAmount}. TXN: ${txn}`);
+}
+</script>
+
+</body>
+</html>
