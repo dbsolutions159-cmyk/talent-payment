@@ -1,23 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Payment</title>
+  <title>Talent OS Payment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 10px auto;
+      max-width: 300px;
+    }
+
+    button {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .plan {
+      background: #22c55e;
+      color: black;
+    }
+
+    .submit {
+      background: #3b82f6;
+      color: white;
+      width: 100%;
+    }
+
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    #loader {
+      display: none;
+      color: yellow;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2>Select Plan</h2>
+<h2>Talent OS Payment</h2>
 
-<button onclick="selectPlan(199)">₹199</button>
-<button onclick="selectPlan(499)">₹499</button>
+<div class="card">
+  <h3>Select Plan</h3>
+  <button class="plan" onclick="selectPlan(199)">₹199 (3 Months)</button>
+  <button class="plan" onclick="selectPlan(499)">₹499 (6 Months ⭐)</button>
+  <p id="selected"></p>
+</div>
 
-<h3>Form</h3>
+<div class="card">
+  <h3>Enter Details</h3>
 
-<input id="name" placeholder="Name"><br><br>
-<input id="email" placeholder="Email"><br><br>
-<input id="txn" placeholder="TXN ID"><br><br>
+  <input id="name" placeholder="Name"><br>
+  <input id="email" placeholder="Email"><br>
+  <input id="txn" placeholder="Transaction ID"><br>
 
-<button id="submitBtn">Submit</button>
+  <button class="submit" id="submitBtn">Submit</button>
+
+  <p id="loader">Processing...</p>
+</div>
 
 <script>
 
@@ -25,35 +84,66 @@ let selectedAmount = 0;
 
 function selectPlan(amount){
   selectedAmount = amount;
-  alert("Selected ₹" + amount);
+  document.getElementById("selected").innerText = "Selected Plan: ₹" + amount;
 }
 
+// MAIN SUBMIT
 document.getElementById("submitBtn").addEventListener("click", async () => {
 
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const txn = document.getElementById("txn").value;
+  const btn = document.getElementById("submitBtn");
+  const loader = document.getElementById("loader");
+
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const txn = document.getElementById("txn").value.trim();
 
   if(!name || !email || !txn || !selectedAmount){
-    alert("Fill all");
+    alert("⚠️ Fill all details & select plan");
     return;
   }
 
-  const res = await fetch("https://talent-payment.onrender.com/pay", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ name, email, txn, amount: selectedAmount })
-  });
+  try {
+    btn.disabled = true;
+    loader.style.display = "block";
 
-  const data = await res.json();
+    const res = await fetch("https://talent-payment.onrender.com/pay", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        txn,
+        amount: selectedAmount
+      })
+    });
 
-  if(data.success){
-    alert("Success ✅");
-  } else {
-    alert("Error ❌");
+    const data = await res.json();
+
+    console.log("Response:", data);
+
+    if(data.success){
+      alert("✅ Payment Submitted Successfully");
+
+      // reset
+      document.getElementById("name").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("txn").value = "";
+      document.getElementById("selected").innerText = "";
+      selectedAmount = 0;
+
+    } else {
+      alert("❌ Server Error");
+    }
+
+  } catch (err){
+    console.error(err);
+    alert("❌ Network Error");
   }
+
+  btn.disabled = false;
+  loader.style.display = "none";
 
 });
 
