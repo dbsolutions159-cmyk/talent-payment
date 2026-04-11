@@ -1,115 +1,181 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Talent OS Payment</title>
+  <title>Talent OS Subscription</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     body {
-      font-family: Arial;
-      background: #0f172a;
+      margin: 0;
+      font-family: 'Segoe UI';
+      background: linear-gradient(135deg,#0f172a,#1e293b);
       color: white;
       text-align: center;
-      padding: 20px;
     }
 
-    .box {
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 10px;
+    h1 {
+      margin-top: 20px;
+    }
+
+    .container {
+      max-width: 400px;
       margin: auto;
-      max-width: 350px;
+      padding: 20px;
     }
 
-    input, select {
-      width: 90%;
-      padding: 10px;
-      margin: 5px;
-      border-radius: 5px;
-      border: none;
+    .card {
+      background: #1e293b;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 15px 0;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    .price {
+      font-size: 28px;
+      color: #22c55e;
+      font-weight: bold;
     }
 
     button {
-      padding: 10px;
-      width: 95%;
-      background: #22c55e;
+      width: 100%;
+      padding: 12px;
       border: none;
-      border-radius: 5px;
+      border-radius: 10px;
       margin-top: 10px;
+      cursor: pointer;
       font-weight: bold;
+    }
+
+    .pay {
+      background: #22c55e;
+      color: black;
+    }
+
+    .copy {
+      background: #3b82f6;
+      color: white;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    .tag {
+      color: gold;
+      font-size: 13px;
+    }
+
+    .note {
+      color: #facc15;
+      font-size: 13px;
     }
   </style>
 </head>
 
 <body>
 
-<h2>Talent OS Subscription</h2>
+<h1>Talent OS Subscription</h1>
+<p class="tag">Powered by DB Solutions</p>
 
-<div class="box">
+<div class="container">
 
-<input id="name" placeholder="Full Name">
-<input id="email" placeholder="Email">
-<input id="phone" placeholder="WhatsApp Number">
+  <!-- PLAN 199 -->
+  <div class="card">
+    <div class="price">₹199</div>
+    <p>3 Months Access</p>
 
-<select id="plan">
-  <option value="">Select Plan</option>
-  <option value="199">₹199 - 3 Months</option>
-  <option value="499">₹499 - 6 Months</option>
-  <option value="custom">Other Amount</option>
-</select>
+    <ul style="text-align:left;font-size:14px">
+      <li>Unlimited Job Alerts</li>
+      <li>Resume Guidance</li>
+      <li>Interview Tips</li>
+    </ul>
 
-<input id="customAmount" placeholder="Enter Amount" style="display:none">
+    <button class="pay" onclick="pay(199)">Pay ₹199</button>
+  </div>
 
-<input id="txn" placeholder="Transaction ID">
+  <!-- PLAN 499 -->
+  <div class="card">
+    <div class="price">₹499</div>
+    <p>6 Months Access</p>
+    <p class="tag">⭐ Recommended</p>
 
-<button onclick="pay()">Pay Now</button>
-<button onclick="submitForm()">Submit</button>
+    <ul style="text-align:left;font-size:14px">
+      <li>Unlimited Job Access</li>
+      <li>Priority Support</li>
+      <li>Interview Preparation</li>
+      <li>Career Guidance</li>
+    </ul>
+
+    <button class="pay" onclick="pay(499)">Pay ₹499</button>
+  </div>
+
+  <!-- PAYMENT OPTIONS -->
+  <div class="card">
+    <h3>Payment Options</h3>
+
+    <p><b>UPI ID:</b> dharmeshband492-2@oksbi</p>
+
+    <button class="copy" onclick="copyUPI()">Copy UPI</button>
+
+    <img width="200"
+      src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=dharmeshband492-2@oksbi&pn=TalentOS&cu=INR">
+
+    <p class="note">
+      Scan QR or use UPI ID to pay
+    </p>
+  </div>
+
+  <!-- FORM -->
+  <div class="card">
+    <h3>Confirm Payment</h3>
+
+    <p class="note">
+      After payment, enter Transaction ID below
+    </p>
+
+    <input id="name" placeholder="Full Name">
+    <input id="email" placeholder="Email">
+    <input id="phone" placeholder="WhatsApp Number">
+    <input id="txn" placeholder="Transaction ID">
+
+    <button class="pay" onclick="submitForm()">Submit</button>
+  </div>
 
 </div>
 
 <script>
 
 const upi = "dharmeshband492-2@oksbi";
+let amount = 0;
 
-document.getElementById("plan").addEventListener("change", function(){
-  if(this.value === "custom"){
-    document.getElementById("customAmount").style.display = "block";
-  } else {
-    document.getElementById("customAmount").style.display = "none";
-  }
-});
+function pay(a){
+  amount = a;
 
-function getAmount(){
-  let plan = document.getElementById("plan").value;
-  if(plan === "custom"){
-    return document.getElementById("customAmount").value;
-  }
-  return plan;
-}
+  let link = `upi://pay?pa=${upi}&pn=TalentOS&am=${a}&cu=INR`;
 
-// UPI PAY
-function pay(){
-  let amount = getAmount();
+  alert("Complete payment then come back & submit form");
 
-  if(!amount){
-    alert("Select plan");
-    return;
-  }
-
-  let link = `upi://pay?pa=${upi}&pn=TalentOS&am=${amount}&cu=INR`;
   window.location.href = link;
 }
 
-// SUBMIT
+function copyUPI(){
+  navigator.clipboard.writeText(upi);
+  alert("UPI Copied");
+}
+
 async function submitForm(){
 
   let name = document.getElementById("name").value;
   let email = document.getElementById("email").value;
   let phone = document.getElementById("phone").value;
   let txn = document.getElementById("txn").value;
-  let amount = getAmount();
 
-  if(!name || !email || !phone || !txn || !amount){
+  if(!name || !email || !phone || !txn){
     alert("Fill all details");
     return;
   }
@@ -121,6 +187,9 @@ async function submitForm(){
   });
 
   alert("Payment Submitted ✅");
+
+  let msg = `Payment Done%0AName: ${name}%0AAmount: ₹${amount}%0ATXN: ${txn}`;
+  window.location.href = `https://wa.me/91${phone}?text=${msg}`;
 }
 
 </script>
