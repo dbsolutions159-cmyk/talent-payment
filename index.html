@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Talent OS Payment</title>
+  <title>Payment</title>
 </head>
+
 <body>
 
-<h2>Select Plan</h2>
+<h2>Payment Test</h2>
+
 <button onclick="selectPlan(199)">₹199</button>
 <button onclick="selectPlan(499)">₹499</button>
 
-<h3>Details</h3>
+<br><br>
+
 <input id="name" placeholder="Name"><br><br>
 <input id="email" placeholder="Email"><br><br>
-<input id="txn" placeholder="Transaction ID"><br><br>
+<input id="txn" placeholder="Txn"><br><br>
 
-<button id="submitBtn">Submit</button>
+<button onclick="submitForm()">Submit</button>
 
 <script>
+
 let selectedAmount = 0;
 
 function selectPlan(amount){
@@ -24,33 +28,47 @@ function selectPlan(amount){
   alert("Selected ₹" + amount);
 }
 
-document.getElementById("submitBtn").addEventListener("click", async () => {
+async function submitForm(){
 
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const txn = document.getElementById("txn").value;
+  console.log("Clicked submit");
+
+  let name = document.getElementById("name").value;
+  let email = document.getElementById("email").value;
+  let txn = document.getElementById("txn").value;
 
   if(!name || !email || !txn || !selectedAmount){
-    alert("Fill all fields");
+    alert("Fill all");
     return;
   }
 
-  const res = await fetch("https://talent-payment.onrender.com/pay", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ name, email, txn, amount: selectedAmount })
-  });
+  try {
+    const res = await fetch("https://talent-payment.onrender.com/pay", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        txn,
+        amount: selectedAmount
+      })
+    });
 
-  const data = await res.json();
-  console.log(data);
+    console.log("Response received");
 
-  if(data.success){
-    alert("✅ Done");
-  } else {
-    alert("❌ Error");
+    const data = await res.json();
+
+    console.log(data);
+
+    alert("Done ✅");
+
+  } catch (err){
+    console.log("Error:", err);
+    alert("Error ❌");
   }
+}
 
-});
 </script>
 
 </body>
