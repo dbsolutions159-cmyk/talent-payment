@@ -6,74 +6,151 @@
 
   <style>
     body {
-      font-family: Arial;
-      background: #0f172a;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
       color: white;
       text-align: center;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: auto;
       padding: 20px;
     }
 
-    .box {
+    .card {
       background: #1e293b;
+      border-radius: 15px;
       padding: 20px;
-      border-radius: 12px;
-      margin: 15px auto;
-      width: 300px;
+      margin: 15px 0;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    .price {
+      font-size: 28px;
+      font-weight: bold;
+      color: #22c55e;
     }
 
     button {
-      background: #22c55e;
-      border: none;
-      padding: 12px;
       width: 100%;
-      border-radius: 8px;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
       margin-top: 10px;
+      font-size: 16px;
       cursor: pointer;
+    }
+
+    .pay-btn {
+      background: #22c55e;
+      color: black;
+      font-weight: bold;
+    }
+
+    .copy-btn {
+      background: #3b82f6;
+      color: white;
     }
 
     input {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: none;
+    }
+
+    img {
+      margin-top: 10px;
+      border-radius: 10px;
+    }
+
+    .tag {
+      color: gold;
+      font-size: 14px;
     }
   </style>
 </head>
 
 <body>
 
-<h2>Talent OS Subscription</h2>
+<h1>Talent OS Subscription</h1>
 
-<div class="box">
-  <h3>₹199 - 3 Months</h3>
-  <button onclick="pay(199)">Pay ₹199</button>
-</div>
+<div class="container">
 
-<div class="box">
-  <h3>₹499 - 6 Months ⭐ Recommended</h3>
-  <button onclick="pay(499)">Pay ₹499</button>
-</div>
+  <!-- ₹199 -->
+  <div class="card">
+    <div class="price">₹199</div>
+    <p>3 Months</p>
 
-<div class="box">
-  <h3>Confirm Payment</h3>
+    <button class="pay-btn" onclick="pay(199)">Pay Now</button>
 
-  <input id="name" placeholder="Your Name">
-  <input id="email" placeholder="Your Email">
-  <input id="txn" placeholder="Transaction ID">
+    <img id="qr199" width="180">
 
-  <button onclick="submitForm()">I Have Paid</button>
+    <button class="copy-btn" onclick="copyUPI()">Copy UPI ID</button>
+  </div>
+
+  <!-- ₹499 -->
+  <div class="card">
+    <div class="price">₹499</div>
+    <p>6 Months</p>
+    <p class="tag">⭐ Recommended</p>
+
+    <button class="pay-btn" onclick="pay(499)">Pay Now</button>
+
+    <img id="qr499" width="180">
+
+    <button class="copy-btn" onclick="copyUPI()">Copy UPI ID</button>
+  </div>
+
+  <!-- FORM -->
+  <div class="card">
+    <h3>Confirm Payment</h3>
+
+    <input id="name" placeholder="Your Name">
+    <input id="email" placeholder="Your Email">
+    <input id="txn" placeholder="Transaction ID">
+
+    <button class="pay-btn" onclick="submitForm()">Submit</button>
+  </div>
+
 </div>
 
 <script>
+
+const upiID = "dharmeshband492-2@oksbi";
 let selectedAmount = 0;
+
+// Generate QR
+document.getElementById("qr199").src =
+`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiID}&pn=TalentOS&am=199&cu=INR`;
+
+document.getElementById("qr499").src =
+`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiID}&pn=TalentOS&am=499&cu=INR`;
 
 function pay(amount){
   selectedAmount = amount;
 
-  let upi = `upi://pay?pa=dharmeshband492-2@oksbi&pn=TalentOS&am=${amount}&cu=INR`;
+  let upiLink = `upi://pay?pa=${upiID}&pn=TalentOS&am=${amount}&cu=INR`;
 
-  window.location.href = upi;
+  // Try opening UPI app
+  window.location.href = upiLink;
+
+  // fallback alert
+  setTimeout(()=>{
+    alert("If UPI app not opened, scan QR or copy UPI ID");
+  },2000);
+}
+
+function copyUPI(){
+  navigator.clipboard.writeText(upiID);
+  alert("UPI ID copied!");
 }
 
 function submitForm(){
@@ -82,22 +159,15 @@ function submitForm(){
   let txn = document.getElementById("txn").value;
 
   if(!name || !email || !txn || !selectedAmount){
-    alert("Fill all details + select plan");
+    alert("Fill all details & select plan");
     return;
   }
 
-  fetch("http://localhost:5000/send", {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({name,email,txn,amount:selectedAmount})
-  });
+  let msg = `Hi, I paid ₹${selectedAmount}%0AName: ${name}%0AEmail: ${email}%0ATXN: ${txn}`;
 
-  alert("Payment Submitted! Check your email.");
-
-  window.location.href =
-   "https://wa.me/917987107059?text=" +
-   encodeURIComponent(`Hi, I paid ₹${selectedAmount}. TXN: ${txn}`);
+  window.location.href = "https://wa.me/917987107059?text=" + msg;
 }
+
 </script>
 
 </body>
