@@ -8,31 +8,38 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
+      background: linear-gradient(135deg, #0f172a, #020617);
       color: white;
       text-align: center;
     }
 
     h1 {
       margin-top: 20px;
+      font-size: 26px;
     }
 
     .container {
-      max-width: 400px;
+      max-width: 420px;
       margin: auto;
       padding: 20px;
     }
 
     .card {
-      background: #1e293b;
-      border-radius: 15px;
+      background: #0f172a;
+      border-radius: 16px;
       padding: 20px;
       margin: 15px 0;
-      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      border: 1px solid #1e293b;
+      transition: 0.3s;
+    }
+
+    .card.active {
+      border: 2px solid #22c55e;
+      box-shadow: 0 0 20px rgba(34,197,94,0.3);
     }
 
     .price {
-      font-size: 28px;
+      font-size: 30px;
       font-weight: bold;
       color: #22c55e;
     }
@@ -43,8 +50,9 @@
       border: none;
       border-radius: 10px;
       margin-top: 10px;
-      font-size: 16px;
+      font-size: 15px;
       cursor: pointer;
+      transition: 0.3s;
     }
 
     .pay-btn {
@@ -60,10 +68,11 @@
 
     input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-top: 10px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: none;
+      outline: none;
     }
 
     img {
@@ -73,40 +82,47 @@
 
     .tag {
       color: gold;
-      font-size: 14px;
+      font-size: 13px;
     }
+
+    .loader {
+      display: none;
+      margin-top: 10px;
+      color: #22c55e;
+    }
+
   </style>
 </head>
 
 <body>
 
-<h1>Talent OS Subscription</h1>
+<h1>🚀 Talent OS Subscription</h1>
 
 <div class="container">
 
   <!-- ₹199 -->
-  <div class="card">
+  <div class="card" id="card199">
     <div class="price">₹199</div>
-    <p>3 Months</p>
+    <p>3 Months Access</p>
 
-    <button class="pay-btn" onclick="pay(199)">Pay Now</button>
+    <button class="pay-btn" onclick="selectPlan(199)">Select Plan</button>
 
     <img id="qr199" width="180">
 
-    <button class="copy-btn" onclick="copyUPI()">Copy UPI ID</button>
+    <button class="copy-btn" onclick="copyUPI()">Copy UPI</button>
   </div>
 
   <!-- ₹499 -->
-  <div class="card">
+  <div class="card" id="card499">
     <div class="price">₹499</div>
-    <p>6 Months</p>
+    <p>6 Months Access</p>
     <p class="tag">⭐ Recommended</p>
 
-    <button class="pay-btn" onclick="pay(499)">Pay Now</button>
+    <button class="pay-btn" onclick="selectPlan(499)">Select Plan</button>
 
     <img id="qr499" width="180">
 
-    <button class="copy-btn" onclick="copyUPI()">Copy UPI ID</button>
+    <button class="copy-btn" onclick="copyUPI()">Copy UPI</button>
   </div>
 
   <!-- FORM -->
@@ -117,7 +133,9 @@
     <input id="email" placeholder="Your Email">
     <input id="txn" placeholder="Transaction ID">
 
-    <button class="pay-btn" onclick="submitForm()">Submit</button>
+    <button class="pay-btn" onclick="submitForm()">Submit Payment</button>
+
+    <div class="loader" id="loader">Processing...</div>
   </div>
 
 </div>
@@ -134,9 +152,14 @@ document.getElementById("qr199").src =
 document.getElementById("qr499").src =
 `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiID}&pn=TalentOS&am=499&cu=INR`;
 
-// UPI pay
-function pay(amount){
+// SELECT PLAN
+function selectPlan(amount){
   selectedAmount = amount;
+
+  document.getElementById("card199").classList.remove("active");
+  document.getElementById("card499").classList.remove("active");
+
+  document.getElementById("card" + amount).classList.add("active");
 
   let upiLink = `upi://pay?pa=${upiID}&pn=TalentOS&am=${amount}&cu=INR`;
 
@@ -147,13 +170,13 @@ function pay(amount){
   },2000);
 }
 
-// Copy UPI
+// COPY
 function copyUPI(){
   navigator.clipboard.writeText(upiID);
-  alert("UPI ID copied!");
+  alert("UPI copied!");
 }
 
-// FINAL SUBMIT (CONNECTED TO BACKEND)
+// SUBMIT
 async function submitForm(){
 
   let name = document.getElementById("name").value;
@@ -161,9 +184,13 @@ async function submitForm(){
   let txn = document.getElementById("txn").value;
 
   if(!name || !email || !txn || !selectedAmount){
-    alert("Fill all details & select plan");
+    alert("Select plan + fill all details");
     return;
   }
+
+  document.getElementById("loader").style.display = "block";
+
+  console.log("Sending to backend...");
 
   try {
     const res = await fetch("https://talent-payment.onrender.com/pay", {
@@ -179,10 +206,15 @@ async function submitForm(){
       })
     });
 
+    console.log("Response:", res);
+
     const data = await res.json();
+    console.log("Data:", data);
+
+    document.getElementById("loader").style.display = "none";
 
     if(data.success){
-      alert("Payment Submitted Successfully ✅\nCheck your email!");
+      alert("✅ Payment Successful!\nCheck your email.");
 
       // reset
       document.getElementById("name").value = "";
@@ -191,11 +223,12 @@ async function submitForm(){
       selectedAmount = 0;
 
     } else {
-      alert("Something went wrong ❌");
+      alert("❌ Failed, try again");
     }
 
   } catch (err){
-    alert("Server error ❌");
+    document.getElementById("loader").style.display = "none";
+    alert("❌ Server error");
     console.log(err);
   }
 }
