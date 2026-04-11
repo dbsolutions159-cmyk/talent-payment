@@ -1,72 +1,126 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Payment</title>
+  <title>Talent OS Payment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .box {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 10px;
+      margin: auto;
+      max-width: 350px;
+    }
+
+    input, select {
+      width: 90%;
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      padding: 10px;
+      width: 95%;
+      background: #22c55e;
+      border: none;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2>Payment Test</h2>
+<h2>Talent OS Subscription</h2>
 
-<button onclick="selectPlan(199)">₹199</button>
-<button onclick="selectPlan(499)">₹499</button>
+<div class="box">
 
-<br><br>
+<input id="name" placeholder="Full Name">
+<input id="email" placeholder="Email">
+<input id="phone" placeholder="WhatsApp Number">
 
-<input id="name" placeholder="Name"><br><br>
-<input id="email" placeholder="Email"><br><br>
-<input id="txn" placeholder="Txn"><br><br>
+<select id="plan">
+  <option value="">Select Plan</option>
+  <option value="199">₹199 - 3 Months</option>
+  <option value="499">₹499 - 6 Months</option>
+  <option value="custom">Other Amount</option>
+</select>
 
+<input id="customAmount" placeholder="Enter Amount" style="display:none">
+
+<input id="txn" placeholder="Transaction ID">
+
+<button onclick="pay()">Pay Now</button>
 <button onclick="submitForm()">Submit</button>
+
+</div>
 
 <script>
 
-let selectedAmount = 0;
+const upi = "dharmeshband492-2@oksbi";
 
-function selectPlan(amount){
-  selectedAmount = amount;
-  alert("Selected ₹" + amount);
+document.getElementById("plan").addEventListener("change", function(){
+  if(this.value === "custom"){
+    document.getElementById("customAmount").style.display = "block";
+  } else {
+    document.getElementById("customAmount").style.display = "none";
+  }
+});
+
+function getAmount(){
+  let plan = document.getElementById("plan").value;
+  if(plan === "custom"){
+    return document.getElementById("customAmount").value;
+  }
+  return plan;
 }
 
-async function submitForm(){
+// UPI PAY
+function pay(){
+  let amount = getAmount();
 
-  console.log("Clicked submit");
-
-  let name = document.getElementById("name").value;
-  let email = document.getElementById("email").value;
-  let txn = document.getElementById("txn").value;
-
-  if(!name || !email || !txn || !selectedAmount){
-    alert("Fill all");
+  if(!amount){
+    alert("Select plan");
     return;
   }
 
-  try {
-    const res = await fetch("https://talent-payment.onrender.com/pay", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        name,
-        email,
-        txn,
-        amount: selectedAmount
-      })
-    });
+  let link = `upi://pay?pa=${upi}&pn=TalentOS&am=${amount}&cu=INR`;
+  window.location.href = link;
+}
 
-    console.log("Response received");
+// SUBMIT
+async function submitForm(){
 
-    const data = await res.json();
+  let name = document.getElementById("name").value;
+  let email = document.getElementById("email").value;
+  let phone = document.getElementById("phone").value;
+  let txn = document.getElementById("txn").value;
+  let amount = getAmount();
 
-    console.log(data);
-
-    alert("Done ✅");
-
-  } catch (err){
-    console.log("Error:", err);
-    alert("Error ❌");
+  if(!name || !email || !phone || !txn || !amount){
+    alert("Fill all details");
+    return;
   }
+
+  await fetch("https://talent-payment.onrender.com/pay", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ name, email, phone, txn, amount })
+  });
+
+  alert("Payment Submitted ✅");
 }
 
 </script>
