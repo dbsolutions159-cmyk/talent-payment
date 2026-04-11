@@ -127,33 +127,35 @@
 const upiID = "dharmeshband492-2@oksbi";
 let selectedAmount = 0;
 
-// Generate QR
+// QR generate
 document.getElementById("qr199").src =
 `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiID}&pn=TalentOS&am=199&cu=INR`;
 
 document.getElementById("qr499").src =
 `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiID}&pn=TalentOS&am=499&cu=INR`;
 
+// UPI pay
 function pay(amount){
   selectedAmount = amount;
 
   let upiLink = `upi://pay?pa=${upiID}&pn=TalentOS&am=${amount}&cu=INR`;
 
-  // Try opening UPI app
   window.location.href = upiLink;
 
-  // fallback alert
   setTimeout(()=>{
     alert("If UPI app not opened, scan QR or copy UPI ID");
   },2000);
 }
 
+// Copy UPI
 function copyUPI(){
   navigator.clipboard.writeText(upiID);
   alert("UPI ID copied!");
 }
 
-function submitForm(){
+// FINAL SUBMIT (CONNECTED TO BACKEND)
+async function submitForm(){
+
   let name = document.getElementById("name").value;
   let email = document.getElementById("email").value;
   let txn = document.getElementById("txn").value;
@@ -163,9 +165,39 @@ function submitForm(){
     return;
   }
 
-  let msg = `Hi, I paid ₹${selectedAmount}%0AName: ${name}%0AEmail: ${email}%0ATXN: ${txn}`;
+  try {
+    const res = await fetch("https://talent-payment.onrender.com/pay", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        txn,
+        amount: selectedAmount
+      })
+    });
 
-  window.location.href = "https://wa.me/917987107059?text=" + msg;
+    const data = await res.json();
+
+    if(data.success){
+      alert("Payment Submitted Successfully ✅\nCheck your email!");
+
+      // reset
+      document.getElementById("name").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("txn").value = "";
+      selectedAmount = 0;
+
+    } else {
+      alert("Something went wrong ❌");
+    }
+
+  } catch (err){
+    alert("Server error ❌");
+    console.log(err);
+  }
 }
 
 </script>
