@@ -1,237 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Talent OS Payment</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f172a, #020617);
-      color: white;
-      text-align: center;
-    }
-
-    h1 {
-      margin-top: 20px;
-      font-size: 26px;
-    }
-
-    .container {
-      max-width: 420px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    .card {
-      background: #0f172a;
-      border-radius: 16px;
-      padding: 20px;
-      margin: 15px 0;
-      border: 1px solid #1e293b;
-      transition: 0.3s;
-    }
-
-    .card.active {
-      border: 2px solid #22c55e;
-      box-shadow: 0 0 20px rgba(34,197,94,0.3);
-    }
-
-    .price {
-      font-size: 30px;
-      font-weight: bold;
-      color: #22c55e;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      margin-top: 10px;
-      font-size: 15px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .pay-btn {
-      background: #22c55e;
-      color: black;
-      font-weight: bold;
-    }
-
-    .copy-btn {
-      background: #3b82f6;
-      color: white;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 10px;
-      border: none;
-      outline: none;
-    }
-
-    img {
-      margin-top: 10px;
-      border-radius: 10px;
-    }
-
-    .tag {
-      color: gold;
-      font-size: 13px;
-    }
-
-    .loader {
-      display: none;
-      margin-top: 10px;
-      color: #22c55e;
-    }
-
-  </style>
+<title>Payment</title>
 </head>
 
 <body>
 
-<h1>🚀 Talent OS Subscription</h1>
+<h2>Select Plan</h2>
 
-<div class="container">
+<button onclick="selectPlan(199)">₹199</button>
+<button onclick="selectPlan(499)">₹499</button>
 
-  <!-- ₹199 -->
-  <div class="card" id="card199">
-    <div class="price">₹199</div>
-    <p>3 Months Access</p>
+<h3>Form</h3>
 
-    <button class="pay-btn" onclick="selectPlan(199)">Select Plan</button>
+<input id="name" placeholder="Name"><br><br>
+<input id="email" placeholder="Email"><br><br>
+<input id="txn" placeholder="TXN ID"><br><br>
 
-    <img id="qr199" width="180">
-
-    <button class="copy-btn" onclick="copyUPI()">Copy UPI</button>
-  </div>
-
-  <!-- ₹499 -->
-  <div class="card" id="card499">
-    <div class="price">₹499</div>
-    <p>6 Months Access</p>
-    <p class="tag">⭐ Recommended</p>
-
-    <button class="pay-btn" onclick="selectPlan(499)">Select Plan</button>
-
-    <img id="qr499" width="180">
-
-    <button class="copy-btn" onclick="copyUPI()">Copy UPI</button>
-  </div>
-
-  <!-- FORM -->
-  <div class="card">
-    <h3>Confirm Payment</h3>
-
-    <input id="name" placeholder="Your Name">
-    <input id="email" placeholder="Your Email">
-    <input id="txn" placeholder="Transaction ID">
-
-    <button class="pay-btn" onclick="submitForm()">Submit Payment</button>
-
-    <div class="loader" id="loader">Processing...</div>
-  </div>
-
-</div>
+<button id="submitBtn">Submit</button>
 
 <script>
 
-const upiID = "dharmeshband492-2@oksbi";
 let selectedAmount = 0;
 
-// QR generate
-document.getElementById("qr199").src =
-`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiID}&pn=TalentOS&am=199&cu=INR`;
-
-document.getElementById("qr499").src =
-`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiID}&pn=TalentOS&am=499&cu=INR`;
-
-// SELECT PLAN
 function selectPlan(amount){
   selectedAmount = amount;
-
-  document.getElementById("card199").classList.remove("active");
-  document.getElementById("card499").classList.remove("active");
-
-  document.getElementById("card" + amount).classList.add("active");
-
-  let upiLink = `upi://pay?pa=${upiID}&pn=TalentOS&am=${amount}&cu=INR`;
-
-  window.location.href = upiLink;
-
-  setTimeout(()=>{
-    alert("If UPI app not opened, scan QR or copy UPI ID");
-  },2000);
+  alert("Selected ₹" + amount);
 }
 
-// COPY
-function copyUPI(){
-  navigator.clipboard.writeText(upiID);
-  alert("UPI copied!");
-}
+document.getElementById("submitBtn").addEventListener("click", async () => {
 
-// SUBMIT
-async function submitForm(){
-
-  let name = document.getElementById("name").value;
-  let email = document.getElementById("email").value;
-  let txn = document.getElementById("txn").value;
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const txn = document.getElementById("txn").value;
 
   if(!name || !email || !txn || !selectedAmount){
-    alert("Select plan + fill all details");
+    alert("Fill all");
     return;
   }
 
-  document.getElementById("loader").style.display = "block";
+  const res = await fetch("https://talent-payment.onrender.com/pay", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ name, email, txn, amount: selectedAmount })
+  });
 
-  console.log("Sending to backend...");
+  const data = await res.json();
 
-  try {
-    const res = await fetch("https://talent-payment.onrender.com/pay", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        name,
-        email,
-        txn,
-        amount: selectedAmount
-      })
-    });
-
-    console.log("Response:", res);
-
-    const data = await res.json();
-    console.log("Data:", data);
-
-    document.getElementById("loader").style.display = "none";
-
-    if(data.success){
-      alert("✅ Payment Successful!\nCheck your email.");
-
-      // reset
-      document.getElementById("name").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("txn").value = "";
-      selectedAmount = 0;
-
-    } else {
-      alert("❌ Failed, try again");
-    }
-
-  } catch (err){
-    document.getElementById("loader").style.display = "none";
-    alert("❌ Server error");
-    console.log(err);
+  if(data.success){
+    alert("Success ✅");
+  } else {
+    alert("Error ❌");
   }
-}
+
+});
 
 </script>
 
