@@ -1,195 +1,120 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Talent OS Subscription</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Talent OS Payment</title>
 
   <style>
     body {
-      margin: 0;
-      font-family: 'Segoe UI';
-      background: linear-gradient(135deg,#0f172a,#1e293b);
+      font-family: Arial;
+      background: #0f172a;
       color: white;
       text-align: center;
+      padding: 30px;
     }
 
-    h1 {
-      margin-top: 20px;
-    }
-
-    .container {
-      max-width: 400px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    .card {
+    .box {
       background: #1e293b;
-      border-radius: 15px;
       padding: 20px;
-      margin: 15px 0;
-      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      border-radius: 10px;
+      width: 350px;
+      margin: auto;
     }
 
-    .price {
-      font-size: 28px;
-      color: #22c55e;
-      font-weight: bold;
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: none;
     }
 
     button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      margin-top: 10px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .pay {
       background: #22c55e;
-      color: black;
-    }
-
-    .copy {
-      background: #3b82f6;
       color: white;
+      font-weight: bold;
+      cursor: pointer;
     }
 
-    input {
-      width: 100%;
+    .plan {
+      background: #334155;
+      margin: 5px;
       padding: 10px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: none;
+      cursor: pointer;
     }
 
-    .tag {
-      color: gold;
-      font-size: 13px;
-    }
-
-    .note {
-      color: #facc15;
-      font-size: 13px;
+    .selected {
+      background: #22c55e;
     }
   </style>
 </head>
 
 <body>
 
-<h1>Talent OS Subscription</h1>
-<p class="tag">Powered by DB Solutions</p>
+<h1>🚀 Talent OS Subscription</h1>
 
-<div class="container">
+<div class="box">
 
-  <!-- PLAN 199 -->
-  <div class="card">
-    <div class="price">₹199</div>
-    <p>3 Months Access</p>
+  <h3>Select Plan</h3>
 
-    <ul style="text-align:left;font-size:14px">
-      <li>Unlimited Job Alerts</li>
-      <li>Resume Guidance</li>
-      <li>Interview Tips</li>
-    </ul>
+  <div class="plan" onclick="selectPlan(199)">₹199 (3 Months)</div>
+  <div class="plan" onclick="selectPlan(499)">₹499 (6 Months) ⭐ Recommended</div>
 
-    <button class="pay" onclick="pay(199)">Pay ₹199</button>
-  </div>
+  <input id="custom" placeholder="Custom Amount (optional)" />
 
-  <!-- PLAN 499 -->
-  <div class="card">
-    <div class="price">₹499</div>
-    <p>6 Months Access</p>
-    <p class="tag">⭐ Recommended</p>
+  <input id="name" placeholder="Your Name" />
+  <input id="email" placeholder="Email" />
+  <input id="txn" placeholder="Transaction ID" />
 
-    <ul style="text-align:left;font-size:14px">
-      <li>Unlimited Job Access</li>
-      <li>Priority Support</li>
-      <li>Interview Preparation</li>
-      <li>Career Guidance</li>
-    </ul>
-
-    <button class="pay" onclick="pay(499)">Pay ₹499</button>
-  </div>
-
-  <!-- PAYMENT OPTIONS -->
-  <div class="card">
-    <h3>Payment Options</h3>
-
-    <p><b>UPI ID:</b> dharmeshband492-2@oksbi</p>
-
-    <button class="copy" onclick="copyUPI()">Copy UPI</button>
-
-    <img width="200"
-      src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=dharmeshband492-2@oksbi&pn=TalentOS&cu=INR">
-
-    <p class="note">
-      Scan QR or use UPI ID to pay
-    </p>
-  </div>
-
-  <!-- FORM -->
-  <div class="card">
-    <h3>Confirm Payment</h3>
-
-    <p class="note">
-      After payment, enter Transaction ID below
-    </p>
-
-    <input id="name" placeholder="Full Name">
-    <input id="email" placeholder="Email">
-    <input id="phone" placeholder="WhatsApp Number">
-    <input id="txn" placeholder="Transaction ID">
-
-    <button class="pay" onclick="submitForm()">Submit</button>
-  </div>
+  <button onclick="pay()">Submit Payment</button>
 
 </div>
 
 <script>
 
-const upi = "dharmeshband492-2@oksbi";
-let amount = 0;
+let selectedAmount = 0;
 
-function pay(a){
-  amount = a;
+function selectPlan(amount){
+  selectedAmount = amount;
 
-  let link = `upi://pay?pa=${upi}&pn=TalentOS&am=${a}&cu=INR`;
-
-  alert("Complete payment then come back & submit form");
-
-  window.location.href = link;
+  document.querySelectorAll(".plan").forEach(el => el.classList.remove("selected"));
+  event.target.classList.add("selected");
 }
 
-function copyUPI(){
-  navigator.clipboard.writeText(upi);
-  alert("UPI Copied");
-}
+async function pay(){
 
-async function submitForm(){
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const txn = document.getElementById("txn").value;
+  const custom = document.getElementById("custom").value;
 
-  let name = document.getElementById("name").value;
-  let email = document.getElementById("email").value;
-  let phone = document.getElementById("phone").value;
-  let txn = document.getElementById("txn").value;
+  let amount = custom || selectedAmount;
 
-  if(!name || !email || !phone || !txn){
+  if(!name || !email || !txn || !amount){
     alert("Fill all details");
     return;
   }
 
-  await fetch("https://talent-payment.onrender.com/pay", {
+  const res = await fetch("/pay", {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ name, email, phone, txn, amount })
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ name, email, txn, amount })
   });
 
-  alert("Payment Submitted ✅");
+  const data = await res.json();
 
-  let msg = `Payment Done%0AName: ${name}%0AAmount: ₹${amount}%0ATXN: ${txn}`;
-  window.location.href = `https://wa.me/91${phone}?text=${msg}`;
+  if(data.success){
+    alert("Payment Success ✅");
+
+    if(data.whatsapp){
+      window.open(data.whatsapp);
+    }
+
+  } else {
+    alert("Error ❌");
+  }
+
 }
 
 </script>
